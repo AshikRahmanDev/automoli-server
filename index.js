@@ -42,6 +42,12 @@ async function run() {
       const result = await carCollection.find(query).toArray();
       res.send(result);
     });
+    // get all seller
+    app.get("/allseller", async (req, res) => {
+      const query = { role: "seller" };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
   } finally {
   }
 }
