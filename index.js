@@ -11,7 +11,7 @@ app.use(express.json());
 
 // conndect to mongodb
 const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.sqgzvsr.mongodb.net/?retryWrites=true&w=majority`;
-console.log(process.env.MONGODB_PASSWORD);
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -22,6 +22,7 @@ const userCollection = client.db("automoli").collection("users");
 
 async function run() {
   try {
+    // add user in database
     app.post("/adduser", async (req, res) => {
       const user = req.body;
       const result = await userCollection.insertOne(user);
