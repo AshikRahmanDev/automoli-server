@@ -19,13 +19,27 @@ const client = new MongoClient(uri, {
 
 // collections
 const userCollection = client.db("automoli").collection("users");
+const carCollection = client.db("automoli").collection("carAds");
 
 async function run() {
   try {
-    // add user in database
+    // add user in mongodb
     app.post("/adduser", async (req, res) => {
       const user = req.body;
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    // add Product api
+    app.post("/add-car-ad", async (req, res) => {
+      const product = req.body;
+      const result = await carCollection.insertOne(product);
+      res.send(result);
+    });
+    // get seller ads api
+    app.get("/myads", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await carCollection.find(query).toArray();
       res.send(result);
     });
   } finally {
