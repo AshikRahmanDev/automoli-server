@@ -5,6 +5,7 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const jwt = require("jsonwebtoken");
+const { query } = require("express");
 
 // midleware
 app.use(cors());
@@ -34,6 +35,7 @@ const client = new MongoClient(uri, {
 // collections
 const userCollection = client.db("automoli").collection("users");
 const carCollection = client.db("automoli").collection("carAds");
+const brandCollection = client.db("automoli").collection("brands");
 
 // verify admin
 const verifyAdmin = async (req, res, next) => {
@@ -107,7 +109,6 @@ async function run() {
     // get all buyer
     app.get("/allbuyer", verifyJwt, verifyAdmin, async (req, res) => {
       const decodedEmail = req.decoded?.email;
-      console.log(decodedEmail);
       const email = req.query.email;
       if (decodedEmail !== email) {
         return res.status(403).send([]);
@@ -159,6 +160,12 @@ async function run() {
       const query = { email: email };
       const user = await userCollection.findOne(query);
       res.send({ isSeller: user?.role == "seller" });
+    });
+    // categoris
+    app.get("/brands", async (req, res) => {
+      const query = {};
+      const result = await brandCollection.find(query).toArray();
+      res.send(result);
     });
   } finally {
   }
