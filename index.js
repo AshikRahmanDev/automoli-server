@@ -5,7 +5,6 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const jwt = require("jsonwebtoken");
-const { query } = require("express");
 
 // midleware
 app.use(cors());
@@ -17,7 +16,7 @@ const verifyJwt = (req, res, next) => {
   }
   jwt.verify(token, process.env.AUTOMOLI_TOKEN, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ access: "Unauthorize Access" });
+      return res.status(403).send({ access: "Unauthorize denided" });
     }
     req.decoded = decoded;
   });
@@ -36,6 +35,7 @@ const client = new MongoClient(uri, {
 const userCollection = client.db("automoli").collection("users");
 const carCollection = client.db("automoli").collection("carAds");
 const brandCollection = client.db("automoli").collection("brands");
+const bookingCollection = client.db("automoli").collection("booking");
 
 // verify admin
 const verifyAdmin = async (req, res, next) => {
@@ -54,8 +54,8 @@ const verifySeller = async (req, res, next) => {
   const email = req.decoded?.email;
   if (email) {
     const filter = { email: email };
-    const admin = await userCollection.findOne(filter);
-    if (admin?.role !== "seller") {
+    const seller = await userCollection.findOne(filter);
+    if (seller?.role !== "seller") {
       res.status(403).send({ message: "forbidden access" });
     }
     next();
@@ -165,6 +165,26 @@ async function run() {
     app.get("/brands", async (req, res) => {
       const query = {};
       const result = await brandCollection.find(query).toArray();
+      res.send(result);
+    });
+    // get cars by brand name
+    app.get("/brand/cars/:brand", async (req, res) => {
+      const brand = req.params.brand;
+      const query = { brand: brand };
+      const result = await carCollection.find(query).toArray();
+      res.send(result);
+    });
+    // is user verified
+    app.get("/isUserVerified", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+    // booking
+    app.post("/addbooking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
   } finally {
