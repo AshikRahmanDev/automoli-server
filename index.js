@@ -14,9 +14,10 @@ const verifyJwt = (req, res, next) => {
   if (!token) {
     return res.status(403).send({ access: "Unauthorize Access" });
   }
+
   jwt.verify(token, process.env.AUTOMOLI_TOKEN, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ access: "Unauthorize denided" });
+      return res.status(401).send({ access: "Unauthorize denided" });
     }
     req.decoded = decoded;
   });
@@ -42,6 +43,7 @@ const verifyAdmin = async (req, res, next) => {
   const email = req.decoded?.email;
   if (email) {
     const filter = { email: email };
+    console.log(filter);
     const admin = await userCollection.findOne(filter);
     if (admin?.role !== "admin") {
       res.status(403).send({ message: "forbidden access" });
@@ -185,6 +187,19 @@ async function run() {
     app.post("/addbooking", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+    // delete user
+    app.delete("/delete/user", verifyJwt, verifyAdmin, async (req, res) => {
+      const decodedEmail = req.decoded?.email;
+      const email = req.query.email;
+      if (decodedEmail !== email) {
+        console.log(decodedEmail, email);
+        return res.status(403).send([]);
+      }
+      const useremail = req.headers.email;
+      const query = { email: useremail };
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
